@@ -1,16 +1,18 @@
 cff-version: 1.2.0
-message: "If you use this repository, please cite this work and the original LeWorldModel paper."
+message: "If you use this repository, please cite both this work and the original LeWorldModel paper."
 type: software
 title: "5-Senses-LeWM: Classical AI Laboratory with LeWorldModel Sensory Layer"
 version: 0.1.0
 date-released: "2026-11-23"
 license: MIT
 authors:
-  - name: "5-Senses-LeWM contributors"
+  - family-names: "Contributors"
+    given-names: "5-Senses-LeWM"
 repository-code: "https://github.com/ljrseals-dev/5-Senses-LeWM"
 abstract: >
-  Classical AI laboratory extended with an educational LeWorldModel-style JEPA
-  world model as the Eyes sensory module for pixel-based physics prediction.
+  Classical AI laboratory (1980s-inspired Hopfield memory, expert systems,
+  offline-first provenance) extended with an educational LeWorldModel-style
+  JEPA world model as the "Eyes" sensory module for pixel-based physics prediction.
 references:
   - type: article
     title: "LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels"

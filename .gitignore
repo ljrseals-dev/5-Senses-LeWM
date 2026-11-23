@@ -33,3 +33,4 @@ env/
 data/toy_trajectories/*
 !data/toy_trajectories/.gitkeep
 .DS_Store
+runs/
