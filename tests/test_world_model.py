@@ -63,3 +63,14 @@ def test_eye_rejects_wrong_observation_channels():
     eye = WorldModelEye()
     with pytest.raises(ValueError, match="3,H,W"):
         eye.encode(torch.randn(1, 1, 32, 32))
+
+
+def test_model_rejects_bad_action_batch():
+    model = LeWMStyle(latent_dim=8, action_dim=2, n_projections=4)
+    with pytest.raises(ValueError, match="actions must have shape"):
+        model(torch.randn(3, 3, 32, 32), torch.randn(2, 2))
+
+
+def test_model_rejects_negative_regularization_weight():
+    with pytest.raises(ValueError, match="non-negative"):
+        LeWMStyle(lambda_reg=-0.1)
