@@ -30,6 +30,9 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Create audit evidence manifest
         shell: bash
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
         run: |
           mkdir -p artifacts
           python - <<'PY'
@@ -40,9 +43,13 @@ jobs:
           import sys
           from pathlib import Path
 
-          commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          tested_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
           manifest = {
-              "commit": commit,
+              "tested_checkout_commit": tested_commit,
+              "pull_request_head_commit": os.environ.get("PR_HEAD_SHA"),
+              "pull_request_base_commit": os.environ.get("PR_BASE_SHA") or None,
+              "github_event_commit": os.environ.get("GITHUB_SHA"),
+              "github_ref": os.environ.get("GITHUB_REF"),
               "github_run_id": os.environ.get("GITHUB_RUN_ID"),
               "github_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
               "os": platform.platform(),
