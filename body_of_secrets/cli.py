@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import typer
-from rich import print as rprint
 
 from .brain import ClassicalBrain
 
@@ -11,22 +10,19 @@ app = typer.Typer(help="BODY OF SECRETS – classical core CLI")
 
 
 @app.command()
-def status():
+def status() -> None:
     """Show current brain status."""
     brain = ClassicalBrain()
-    s = brain.status()
-    rprint("[bold green]Classical Brain Status[/bold green]")
-    for k, v in s.items():
-        rprint(f"  {k}: {v}")
+    for key, value in brain.status().items():
+        typer.echo(f"{key}: {value}")
 
 
 @app.command()
-def ask(question: str = typer.Argument(..., help="Question for the expert / memory")):
+def ask(question: str = typer.Argument(..., help="Question for the expert / memory")) -> None:
     """Query the classical brain."""
     brain = ClassicalBrain()
-    answer = brain.ask(question)
-    rprint(f"[cyan]Q:[/cyan] {question}")
-    rprint(f"[green]A:[/green] {answer}")
+    typer.echo(f"Q: {question}")
+    typer.echo(f"A: {brain.ask(question)}")
 
 
 if __name__ == "__main__":
