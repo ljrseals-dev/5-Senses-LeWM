@@ -8,7 +8,7 @@ license: MIT
 authors:
   - family-names: "Contributors"
     given-names: "5-Senses-LeWM"
-repository-code: "https://github.com/yourname/5-Senses-LeWM"
+repository-code: "https://github.com/ljrseals-dev/5-Senses-LeWM"
 abstract: >
   Classical AI laboratory (1980s-inspired Hopfield memory, expert systems,
   offline-first provenance) extended with an educational LeWorldModel-style
