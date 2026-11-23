@@ -1,9 +1,12 @@
-# Default configuration for educational LeWM-style world model
+# Default configuration for the educational LeWM-style world model.
+# Precedence: built-in defaults < this file < environment variables (.env.example) < CLI flags.
 
 model:
   latent_dim: 192
   action_dim: 2
-  lambda_reg: 0.1
+  lambda_reg: 0.1          # weight of SIGReg (the paper's single loss hyperparameter)
+  n_projections: 256
+  detach_target: false     # false = end-to-end, no stop-gradient (as in the paper)
   encoder:
     channels: [32, 64, 128]
   predictor:
@@ -13,15 +16,21 @@ training:
   batch_size: 32
   lr: 3.0e-4
   max_steps: 2000
-  device: "cpu"          # change to "cuda" when available
+  device: "cpu"            # "cuda" when available
   log_every: 50
+  seed: 0
+  out_dir: "runs/toy"
 
 planner:
   horizon: 8
   n_candidates: 64
   n_elite: 8
   n_iters: 4
+  seed: 0
 
 data:
   image_size: 64
   toy_trajectories: "data/toy_trajectories"
+  n_trajectories: 160
+  trajectory_length: 24
+  test_fraction: 0.2

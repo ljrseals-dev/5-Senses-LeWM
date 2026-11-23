@@ -1,7 +1,7 @@
 [project]
 name = "five-senses-lewm"
-version = "0.1.0"
-description = "Classical AI lab (1980s-inspired) with a LeWorldModel-style sensory Eyes module"
+version = "0.2.0"
+description = "Classical AI lab (1980s-inspired) + LeWorldModel-style sensory world model (Eyes)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -17,19 +17,20 @@ keywords = [
     "classical-ai",
     "offline-first",
 ]
+# The classical core (body_of_secrets) needs only numpy; torch is needed for the Eyes.
 dependencies = [
     "torch>=2.1",
     "numpy",
     "pyyaml",
-    "typer",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "black", "ruff", "mypy"]
-official = []  # Install the upstream stable-worldmodel stack separately.
+dev = ["pytest", "ruff"]
+images = ["pillow"]      # senses.world_model.data.frames_from_folder
+official = []            # install lucas-maes/le-wm / stable-worldmodel separately (see README)
 
 [project.scripts]
-body-of-secrets = "body_of_secrets.cli:app"
+body-of-secrets = "body_of_secrets.cli:main"
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -38,3 +39,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["body_of_secrets*", "senses*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
