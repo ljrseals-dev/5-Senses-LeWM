@@ -1,6 +1,9 @@
+import numpy as np
 import pytest
 import torch
 
+from body_of_secrets.brain import ClassicalBrain
+from body_of_secrets.memory import AssociativeMemory
 from senses.world_model.adapter import WorldModelEye
 from senses.world_model.jepa import LeWMStyle
 from senses.world_model.planner import LatentCEMPlanner
@@ -45,6 +48,19 @@ def test_cem_rejects_mismatched_latent_shapes():
         planner.plan(torch.randn(8), torch.randn(7))
 
 
+def test_cem_rejects_non_finite_action_bounds():
+    model = LeWMStyle(latent_dim=8, action_dim=2, n_projections=4)
+    with pytest.raises(ValueError, match="finite"):
+        LatentCEMPlanner(model, action_low=float("nan"))
+
+
+def test_cem_rejects_model_dtype_mismatch():
+    model = LeWMStyle(latent_dim=8, action_dim=2, n_projections=4)
+    planner = LatentCEMPlanner(model)
+    with pytest.raises(ValueError, match="device and dtype"):
+        planner.plan(torch.randn(8, dtype=torch.float64), torch.randn(8, dtype=torch.float64))
+
+
 def test_eye_surprise_is_prediction_error_and_restores_mode():
     model = LeWMStyle(latent_dim=8, action_dim=2, n_projections=4)
     eye = WorldModelEye(model=model)
@@ -74,3 +90,29 @@ def test_model_rejects_bad_action_batch():
 def test_model_rejects_negative_regularization_weight():
     with pytest.raises(ValueError, match="non-negative"):
         LeWMStyle(lambda_reg=-0.1)
+
+
+def test_associative_memory_rejects_silent_truncation():
+    memory = AssociativeMemory(dim=4)
+    with pytest.raises(ValueError, match="refusing to truncate"):
+        memory.store(np.ones(5))
+
+
+def test_associative_memory_preserves_zero_activation_state():
+    memory = AssociativeMemory(dim=4)
+    memory.store(np.array([1, -1, 1, -1]))
+    recalled, label = memory.recall(np.array([1, -1, 1, -1]))
+    assert recalled.tolist() == [1.0, -1.0, 1.0, -1.0]
+    assert label == "pattern_1"
+
+
+def test_brain_accepts_default_eye_latent_without_truncation():
+    brain = ClassicalBrain()
+    brain.ingest_sensory(torch.randn(1, 192))
+    assert brain.memory.patterns[0].shape == (192,)
+
+
+def test_brain_rejects_multi_item_batch():
+    brain = ClassicalBrain()
+    with pytest.raises(ValueError, match="exactly one"):
+        brain.ingest_sensory(torch.randn(2, 192))
