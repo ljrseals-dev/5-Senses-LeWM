@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Lewis James Seals Jr.
+Copyright (c) 2026 5-Senses-LeWM contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Note: The world-model ideas and SIGReg technique are based on research by
+Maes, Le Lidec, Scieur, LeCun & Balestriero (2026). The educational
+implementation here is independent; for production use the official code at
+https://github.com/lucas-maes/le-wm (MIT).

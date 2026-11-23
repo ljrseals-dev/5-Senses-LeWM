@@ -1,0 +1,27 @@
+# Default configuration for educational LeWM-style world model
+
+model:
+  latent_dim: 192
+  action_dim: 2
+  lambda_reg: 0.1
+  encoder:
+    channels: [32, 64, 128]
+  predictor:
+    hidden: 256
+
+training:
+  batch_size: 32
+  lr: 3.0e-4
+  max_steps: 2000
+  device: "cpu"          # change to "cuda" when available
+  log_every: 50
+
+planner:
+  horizon: 8
+  n_candidates: 64
+  n_elite: 8
+  n_iters: 4
+
+data:
+  image_size: 64
+  toy_trajectories: "data/toy_trajectories"

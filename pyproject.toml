@@ -1,0 +1,40 @@
+[project]
+name = "five-senses-lewm"
+version = "0.1.0"
+description = "Classical AI lab (1980s-inspired) + LeWorldModel-style sensory world model (Eyes)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "5-Senses-LeWM contributors" }
+]
+keywords = [
+    "world-model",
+    "jepa",
+    "leworldmodel",
+    "hopfield",
+    "expert-system",
+    "classical-ai",
+    "offline-first",
+]
+dependencies = [
+    "torch>=2.1",
+    "numpy",
+    "pyyaml",
+    "typer",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "ruff", "mypy"]
+official = []  # install lucas-maes/le-wm / stable-worldmodel separately
+
+[project.scripts]
+body-of-secrets = "body_of_secrets.cli:app"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["body_of_secrets*", "senses*"]
