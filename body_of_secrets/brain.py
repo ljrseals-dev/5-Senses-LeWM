@@ -40,7 +40,11 @@ class ClassicalBrain:
         )
 
     def ingest_sensory(self, latent: torch.Tensor | np.ndarray, label: str = "obs") -> None:
+        if not isinstance(label, str):
+            raise TypeError("label must be a string")
         if isinstance(latent, torch.Tensor):
+            if latent.is_complex():
+                raise TypeError("latent must contain real numeric values")
             if latent.ndim == 2:
                 if latent.shape[0] != 1:
                     raise ValueError("ingest_sensory accepts exactly one latent vector")
@@ -56,8 +60,10 @@ class ClassicalBrain:
                 arr = arr[0]
             elif arr.ndim != 1:
                 raise ValueError("latent must have shape (D,) or (1, D)")
-            if not np.issubdtype(arr.dtype, np.number):
-                raise TypeError("latent must contain numeric values")
+            if not np.issubdtype(arr.dtype, np.number) or np.issubdtype(
+                arr.dtype, np.complexfloating
+            ):
+                raise TypeError("latent must contain real numeric values")
             arr = arr.astype(np.float32, copy=False)
 
         if not np.isfinite(arr).all():
@@ -65,7 +71,8 @@ class ClassicalBrain:
         arr = arr.copy()
         self.memory.store(arr, label=label)
         self._last_latent = arr
-        self.expert.assert_fact("last_latent_norm", float(np.linalg.norm(arr)), source="eyes")
+        norm = float(np.linalg.norm(arr.astype(np.float64, copy=False)))
+        self.expert.assert_fact("last_latent_norm", norm, source="eyes")
 
     def ask(self, question: str) -> str:
         answer = self.expert.query(question)
