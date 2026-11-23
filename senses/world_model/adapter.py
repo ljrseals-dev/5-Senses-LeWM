@@ -1,53 +1,72 @@
-"""
-Bridge between world-model latents and the classical brain.
-"""
+"""Bridge between visual world-model latents and the classical brain."""
 
 from __future__ import annotations
 
 from typing import Optional
+
 import torch
+
 from .jepa import LeWMStyle
 
 
 class WorldModelEye:
-    """
-    “Eyes” sensory module.
-
-    Can be used standalone or to feed latent physics embeddings
-    into the classical brain (body_of_secrets.brain.ClassicalBrain).
-    """
+    """Visual sensory module; encodes observations and predicts their futures."""
 
     def __init__(self, model: Optional[LeWMStyle] = None, device: str = "cpu"):
         self.device = torch.device(device)
-        self.model = model or LeWMStyle()
+        self.model = model if model is not None else LeWMStyle()
         self.model.to(self.device)
         self.model.eval()
 
     @torch.no_grad()
     def encode(self, observation: torch.Tensor) -> torch.Tensor:
-        """observation: (B, 3, H, W) or (3, H, W)"""
-        if observation.dim() == 3:
+        """Encode (3,H,W) or (B,3,H,W) observations."""
+        if not isinstance(observation, torch.Tensor):
+            raise TypeError("observation must be a torch.Tensor")
+        if observation.ndim == 3:
             observation = observation.unsqueeze(0)
-        observation = observation.to(self.device)
-        return self.model.encode(observation)
+        if observation.ndim != 4 or observation.shape[1] != 3:
+            raise ValueError("observation must have shape (3,H,W) or (B,3,H,W)")
+        if observation.shape[0] < 1 or not torch.is_floating_point(observation):
+            raise ValueError("observation batch must be non-empty and floating point")
+        if not torch.isfinite(observation).all():
+            raise ValueError("observation must contain only finite values")
+        return self.model.encode(observation.to(self.device))
 
     @torch.no_grad()
     def predict_next(self, z: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
-        z = z.to(self.device)
-        action = action.to(self.device)
-        return self.model.predict(z, action)
+        if z.ndim != 2 or z.shape[-1] != self.model.latent_dim:
+            raise ValueError("z must have shape (B, model.latent_dim)")
+        if action.ndim != 2 or action.shape != (z.shape[0], self.model.action_dim):
+            raise ValueError("action must have shape (B, model.action_dim)")
+        if not torch.isfinite(z).all() or not torch.isfinite(action).all():
+            raise ValueError("z and action must contain only finite values")
+        return self.model.predict(z.to(self.device), action.to(self.device))
 
+    @torch.no_grad()
     def surprise(
         self,
         obs_t: torch.Tensor,
         action: torch.Tensor,
         obs_tp1: torch.Tensor,
     ) -> float:
-        """Return scalar surprise (prediction + reg loss)."""
-        self.model.eval()
-        with torch.no_grad():
-            loss, *_ = self.model(obs_t.to(self.device), action.to(self.device), obs_tp1.to(self.device))
-        return float(loss.item())
+        """
+        Return prediction error, not the training objective.
+
+        SIGReg is a batch-distribution regularizer; it is not evidence that a
+        particular transition was surprising. The prediction MSE is the
+        transition-specific signal suitable for anomaly triage.
+        """
+        was_training = self.model.training
+        try:
+            self.model.eval()
+            obs_t = obs_t.to(self.device)
+            action = action.to(self.device)
+            obs_tp1 = obs_tp1.to(self.device)
+            _, _, _, pred_loss, _ = self.model(obs_t, action, obs_tp1)
+            return float(pred_loss.item())
+        finally:
+            self.model.train(was_training)
 
     def train_mode(self) -> None:
         self.model.train()
