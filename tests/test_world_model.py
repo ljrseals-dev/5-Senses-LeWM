@@ -3,6 +3,7 @@ import pytest
 import torch
 
 from body_of_secrets.brain import ClassicalBrain
+from body_of_secrets.expert import ExpertSystem, Rule
 from body_of_secrets.memory import AssociativeMemory
 from senses.world_model.adapter import WorldModelEye
 from senses.world_model.jepa import LeWMStyle
@@ -116,3 +117,33 @@ def test_brain_rejects_multi_item_batch():
     brain = ClassicalBrain()
     with pytest.raises(ValueError, match="exactly one"):
         brain.ingest_sensory(torch.randn(2, 192))
+
+
+def test_memory_rejects_empty_and_complex_vectors():
+    memory = AssociativeMemory(dim=4)
+    with pytest.raises(ValueError, match="must not be empty"):
+        memory.store(np.array([]))
+    with pytest.raises(TypeError, match="real numeric"):
+        memory.store(np.array([1 + 2j]))
+
+
+def test_memory_rejects_boolean_dimensions_and_steps():
+    with pytest.raises(ValueError, match="positive integer"):
+        AssociativeMemory(dim=True)
+    memory = AssociativeMemory(dim=4)
+    with pytest.raises(ValueError, match="non-negative integer"):
+        memory.recall(np.ones(4), steps=True)
+
+
+def test_brain_rejects_complex_latent_without_casting():
+    brain = ClassicalBrain(memory_dim=2)
+    with pytest.raises(TypeError, match="real numeric"):
+        brain.ingest_sensory(np.array([1 + 1j, 2 + 0j]))
+
+
+def test_expert_rejects_invalid_confidence_and_query_type():
+    with pytest.raises(ValueError, match="confidence"):
+        Rule("bad", "condition", "action", confidence=float("nan"))
+    expert = ExpertSystem()
+    with pytest.raises(TypeError, match="question must be a string"):
+        expert.query(None)
